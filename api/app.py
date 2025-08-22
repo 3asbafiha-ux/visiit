@@ -95,6 +95,8 @@ def handler(event, context):
             "body": json.dumps({"error": "player_id must be an integer"})
         }
 
+    # تم إزالة شرط الانتظار 24 ساعة
+
     try:
         token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=10).json()
         tokens = token_data.get("tokens", [])
@@ -133,8 +135,7 @@ def handler(event, context):
             return None
         return res
 
-    # هنا تم تعديل max_workers من 40 إلى 200 لدعم 200 طلب متزامن
-    with ThreadPoolExecutor(max_workers=200) as executor:
+    with ThreadPoolExecutor(max_workers=40) as executor:
         futures = [executor.submit(worker, token) for token in tokens]
         for future in futures:
             result = future.result()
@@ -142,6 +143,7 @@ def handler(event, context):
                 results.append(result)
 
     visits_sent = len(results)
+    # لم نحدث last_sent_cache
 
     return {
         "statusCode": 200,
