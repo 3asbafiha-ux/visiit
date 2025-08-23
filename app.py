@@ -3,7 +3,7 @@ import httpx
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from concurrent.futures import ThreadPoolExecutor, as_completed
-import random
+import itertools
 
 app = Flask(__name__)
 
@@ -70,10 +70,7 @@ def send_visit_request(token, TARGET):
     }
     try:
         resp = httpx.post(url, headers=headers, data=TARGET, verify=False, timeout=10)
-        if resp.status_code == 200:
-            return True
-        else:
-            return False
+        return resp.status_code == 200
     except:
         return False
 
@@ -102,13 +99,10 @@ def send_visit():
     TARGET = bytes.fromhex(encrypted_api_data)
 
     results = []
-    index = 0
+    token_cycle = itertools.cycle(tokens)  # إعادة استخدام التوكنات باستمرار
 
-    # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
     while len(results) < 2000:
-        batch_tokens = tokens[index:index+1000]  # نأخذ حتى 500 توكن لكل batch
-        if not batch_tokens:
-            break  # إذا نفذت التوكنات
+        batch_tokens = [next(token_cycle) for _ in range(500)]  # نرسل 500 مرة كل لفة
 
         def worker(token):
             success = send_visit_request(token, TARGET)
@@ -122,8 +116,6 @@ def send_visit():
                     results.append(res)
                 if len(results) >= 2000:
                     break
-
-        index += 500
 
     return jsonify({
         "player_id": player_id_int,
