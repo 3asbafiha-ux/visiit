@@ -105,7 +105,7 @@ def send_visit():
     index = 0
 
     # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
-    while len(results) < 1000:
+    while len(results) < 500:
         batch_tokens = tokens[index:index+1000]  # نأخذ حتى 500 توكن لكل batch
         if not batch_tokens:
             break  # إذا نفذت التوكنات
@@ -123,7 +123,7 @@ def send_visit():
                 if len(results) >= 1000:
                     break
 
-        index += 1000
+        index += 500
 
     return jsonify({
         "player_id": player_id_int,
