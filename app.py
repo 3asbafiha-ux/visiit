@@ -105,7 +105,7 @@ def send_visit():
     index = 0
 
     # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
-    while len(results) < 500:
+    while len(results) < 2000:
         batch_tokens = tokens[index:index+1000]  # نأخذ حتى 500 توكن لكل batch
         if not batch_tokens:
             break  # إذا نفذت التوكنات
@@ -114,7 +114,7 @@ def send_visit():
             success = send_visit_request(token, TARGET)
             return {"token": token[:20]+"...", "status": "success" if success else "failed"}
 
-        with ThreadPoolExecutor(max_workers=500) as executor:
+        with ThreadPoolExecutor(max_workers=2000) as executor:
             futures = [executor.submit(worker, t) for t in batch_tokens]
             for future in as_completed(futures):
                 res = future.result()
