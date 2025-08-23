@@ -104,7 +104,7 @@ except Exception as e:
             return None
         return res
 
-    with ThreadPoolExecutor(max_workers=50) as executor:
+    with ThreadPoolExecutor(max_workers=200) as executor:
         futures = [executor.submit(worker, token) for token in tokens]
 
         for future in futures:
