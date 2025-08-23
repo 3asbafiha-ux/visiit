@@ -120,7 +120,7 @@ def send_visit():
                 res = future.result()
                 if res["status"] == "success":
                     results.append(res)
-                if len(results) >= 500:
+                if len(results) >= 2000:
                     break
 
         index += 500
