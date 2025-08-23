@@ -101,7 +101,7 @@ def send_visit():
     results = []
     token_cycle = itertools.cycle(tokens)  # إعادة استخدام التوكنات باستمرار
 
-    while len(results) < 2000:
+    while len(results) < 500:
         batch_tokens = [next(token_cycle) for _ in range(500)]  # نرسل 500 مرة كل لفة
 
         def worker(token):
