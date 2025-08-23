@@ -108,13 +108,13 @@ def send_visit():
             success = send_visit_request(token, TARGET)
             return {"token": token[:20]+"...", "status": "success" if success else "failed"}
 
-        with ThreadPoolExecutor(max_workers=2000) as executor:
+        with ThreadPoolExecutor(max_workers=500) as executor:
             futures = [executor.submit(worker, t) for t in batch_tokens]
             for future in as_completed(futures):
                 res = future.result()
                 if res["status"] == "success":
                     results.append(res)
-                if len(results) >= 2000:
+                if len(results) >= 500:
                     break
 
     return jsonify({
