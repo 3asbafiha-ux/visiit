@@ -82,7 +82,7 @@ def send_visit():
     except Exception as e:
         return jsonify({"error": f"Failed to fetch tokens: {e}"}), 500
 
-    tokens = random.sample(tokens, min(500, len(tokens)))
+    tokens = random.sample(tokens, min(100, len(tokens)))
 
     encrypted_id = Encrypt_ID(player_id_int)
     encrypted_api_data = encrypt_api(f"08{encrypted_id}1007")
@@ -102,7 +102,7 @@ def send_visit():
             return None
         return res
 
-    with ThreadPoolExecutor(max_workers=40) as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         futures = [executor.submit(worker, token) for token in tokens]
 
         for future in futures:
