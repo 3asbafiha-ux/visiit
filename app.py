@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import httpx
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import random
 
 app = Flask(__name__)
@@ -71,11 +71,11 @@ def send_visit_request(token, TARGET):
     try:
         resp = httpx.post(url, headers=headers, data=TARGET, verify=False, timeout=10)
         if resp.status_code == 200:
-            return {"token": token[:20] + "...", "status": "success"}
+            return True
         else:
-            return {"token": token[:20] + "...", "status": f"failed ({resp.status_code})"}
-    except httpx.RequestError as e:
-        return {"token": token[:20] + "...", "status": f"error ({e})"}
+            return False
+    except:
+        return False
 
 @app.route("/send_visit", methods=["GET"])
 def send_visit():
@@ -87,49 +87,49 @@ def send_visit():
     except ValueError:
         return jsonify({"error": "player_id must be an integer"}), 400
 
-    # جلب التوكنات من API
+    # جلب كل التوكنات من الرابط
     try:
         token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=40).json()
         token_dict = token_data.get("tokens", {})
-        if not token_dict:
+        tokens = list(token_dict.values())
+        if not tokens:
             return jsonify({"error": "No tokens found"}), 500
-        tokens = list(token_dict.values())  # تحويل القيم لقائمة للتعامل معها
     except Exception as e:
         return jsonify({"error": f"Failed to fetch tokens: {e}"}), 500
-
-    tokens = random.sample(tokens, min(500, len(tokens)))
 
     encrypted_id = Encrypt_ID(player_id_int)
     encrypted_api_data = encrypt_api(f"08{encrypted_id}1007")
     TARGET = bytes.fromhex(encrypted_api_data)
 
     results = []
-    failed_tokens = set()
+    index = 0
 
-    def worker(token):
-        if token in failed_tokens:
-            return None
-        res = send_visit_request(token, TARGET)
-        if "failed" in res["status"] or "error" in res["status"]:
-            failed_tokens.add(token)
-            return None
-        return res
+    # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
+    while len(results) < 500:
+        batch_tokens = tokens[index:index+500]  # نأخذ حتى 500 توكن لكل batch
+        if not batch_tokens:
+            break  # إذا نفذت التوكنات
 
-    with ThreadPoolExecutor(max_workers=500) as executor:
-        futures = [executor.submit(worker, token) for token in tokens]
-        for future in futures:
-            result = future.result()
-            if result:
-                results.append(result)
+        def worker(token):
+            success = send_visit_request(token, TARGET)
+            return {"token": token[:20]+"...", "status": "success" if success else "failed"}
 
-    visits_sent = len(results)
+        with ThreadPoolExecutor(max_workers=500) as executor:
+            futures = [executor.submit(worker, t) for t in batch_tokens]
+            for future in as_completed(futures):
+                res = future.result()
+                if res["status"] == "success":
+                    results.append(res)
+                if len(results) >= 500:
+                    break
+
+        index += 500
+
     return jsonify({
         "player_id": player_id_int,
-        "visits_added": visits_sent,
+        "visits_added": len(results),
         "details": results
     })
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)
-
-
