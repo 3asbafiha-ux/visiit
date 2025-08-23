@@ -74,13 +74,15 @@ def send_visit():
         return jsonify({"error": "player_id must be an integer"}), 400
 
     # جلب التوكنات من API
-    try:
-        token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=40).json()
-        tokens = token_data.get("tokens", [])
-        if not tokens:
-            return jsonify({"error": "No tokens found"}), 500
-    except Exception as e:
-        return jsonify({"error": f"Failed to fetch tokens: {e}"}), 500
+    # جلب التوكنات من API
+try:
+    token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=40).json()
+    token_dict = token_data.get("tokens", {})
+    if not token_dict:
+        return jsonify({"error": "No tokens found"}), 500
+    tokens = list(token_dict.values())  # تحويل القيم لقائمة للتعامل معها
+except Exception as e:
+    return jsonify({"error": f"Failed to fetch tokens: {e}"}), 500
 
     tokens = random.sample(tokens, min(500, len(tokens)))
 
