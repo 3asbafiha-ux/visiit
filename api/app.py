@@ -75,7 +75,7 @@ def send_visit():
 
     # جلب التوكنات من API
     try:
-        token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=10).json()
+        token_data = httpx.get("https://auto-token-bngx.onrender.com/api/get_jwt", timeout=40).json()
         tokens = token_data.get("tokens", [])
         if not tokens:
             return jsonify({"error": "No tokens found"}), 500
