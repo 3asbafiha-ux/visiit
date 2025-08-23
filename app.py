@@ -106,7 +106,7 @@ def send_visit():
 
     # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
     while len(results) < 500:
-        batch_tokens = tokens[index:index+1000]  # نأخذ حتى 500 توكن لكل batch
+        batch_tokens = tokens[index:index+500]  # نأخذ حتى 500 توكن لكل batch
         if not batch_tokens:
             break  # إذا نفذت التوكنات
 
