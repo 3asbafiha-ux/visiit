@@ -105,8 +105,8 @@ def send_visit():
     index = 0
 
     # حلقة لإرسال زيارات حتى الوصول لـ 500 زيارة ناجحة
-    while len(results) < 500:
-        batch_tokens = tokens[index:index+500]  # نأخذ حتى 500 توكن لكل batch
+    while len(results) < 1000:
+        batch_tokens = tokens[index:index+1000]  # نأخذ حتى 500 توكن لكل batch
         if not batch_tokens:
             break  # إذا نفذت التوكنات
 
@@ -114,16 +114,16 @@ def send_visit():
             success = send_visit_request(token, TARGET)
             return {"token": token[:20]+"...", "status": "success" if success else "failed"}
 
-        with ThreadPoolExecutor(max_workers=500) as executor:
+        with ThreadPoolExecutor(max_workers=1000) as executor:
             futures = [executor.submit(worker, t) for t in batch_tokens]
             for future in as_completed(futures):
                 res = future.result()
                 if res["status"] == "success":
                     results.append(res)
-                if len(results) >= 500:
+                if len(results) >= 1000:
                     break
 
-        index += 500
+        index += 1000
 
     return jsonify({
         "player_id": player_id_int,
