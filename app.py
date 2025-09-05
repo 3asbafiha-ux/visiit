@@ -101,8 +101,8 @@ def send_visit():
     results = []
     token_cycle = itertools.cycle(tokens)  # إعادة استخدام التوكنات باستمرار
 
-    while len(results) < 500:
-        batch_tokens = [next(token_cycle) for _ in range(500)]  # نرسل 500 مرة كل لفة
+    while len(results) < 1000:
+        batch_tokens = [next(token_cycle) for _ in range(1000)]  # نرسل 500 مرة كل لفة
 
         def worker(token):
             success = send_visit_request(token, TARGET)
@@ -114,7 +114,7 @@ def send_visit():
                 res = future.result()
                 if res["status"] == "success":
                     results.append(res)
-                if len(results) >= 5000:
+                if len(results) >= 2000:
                     break
 
     return jsonify({
